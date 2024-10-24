@@ -3,7 +3,6 @@ const {User} = require('../models/userModel'); // Import User model
 
 
 exports.index = async function(req, res) {
-  console.log("undex")
   const users = await User.find({});
   return res.send(users);
 }
@@ -16,28 +15,11 @@ exports.show = async function(req, res,next) {
     return next(createError(404, "User not found"));
 }
 
-exports.login = async function(req, res,next) {
+
+
+
+exports.create = async function(req, res,next) {
   const user = req.body;
-  //encrypt the password
-  user.password = require('crypto').createHash('sha1').update (user.password).digest('hex');
-
-  const userFound = await User.findOne({username  : user.username, password : user.password});
-
-  if(userFound){
-    //set auth token
-    userFound.authToken = require('crypto').randomBytes(64).toString('hex');
-    await userFound.save();
-
-    return res.send({result: true, authToken: userFound.authToken});
-  }
-  else
-    return next(createError(404, "User not found"));
-}
-
-
-exports.create = function(req, res,next) {
-  const user = req.body;
-
   
   if (!user.username) {
     return next(createError(400, "Username is required"));
@@ -48,8 +30,16 @@ exports.create = function(req, res,next) {
   }
 
   const newUser = new User(user);
-  newUser.save();
+  await newUser.save();
 
   return res.send({result: true});
 
+}
+
+exports.delete = async function(req, res) {
+  const username = req.params.username;
+
+  await User.findByIdAndDelete(username);
+  return res.send({result: true});
+ 
 }

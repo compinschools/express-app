@@ -12,11 +12,12 @@ const userSchema = new mongoose.Schema({
   authToken: String
 });
 
-//encrypt the password when set
 userSchema.pre('save', function(next) {
+  if(!this.isModified('password')){
+    return next()
+}
   this.password = require('crypto').createHash('sha1').update(this.password).digest('hex');
-  next();
+  return next();
 });
-
 
 module.exports.User = mongoose.model('User', userSchema, 'users');
